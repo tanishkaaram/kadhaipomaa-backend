@@ -4,6 +4,9 @@ const http = require("http");
 
 const { Server } = require("socket.io");
 
+const Filter = require("bad-words");
+const filter = new Filter();
+
 const cors = require("cors");
 
 const app = express();
@@ -136,6 +139,10 @@ io.on("connection", (socket) => {
     "send-message",
 
     (data) => {
+
+      if (data && data.content) {
+        data.content = filter.clean(data.content);
+      }
 
       io.to(data.roomId)
         .emit(
