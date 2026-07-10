@@ -25,6 +25,9 @@ const io = new Server(server, {
 
 });
 
+const ipViolations = new Map();
+const BAN_DURATION = 24 * 60 * 60 * 1000; // 24 hours
+
 let waitingUser = null;
 
 io.on("connection", (socket) => {
@@ -140,8 +143,29 @@ io.on("connection", (socket) => {
 
     (data) => {
 
-      if (data && data.content) {
-        data.content = filter.clean(data.content);
+      const ip = socket.handshake.address;
+      const violation = ipViolations.get(ip) || { count: 0, bannedUntil: null };
+
+      if (violation.bannedUntil && new Date() < violation.bannedUntil) {
+         socket.emit("banned", { message: "You are temporarily banned for 24 hours." });
+         socket.disconnect(true);
+         return;
+      }
+
+      if (data && data.content && filter.isProfane(data.content)) {
+         violation.count += 1;
+         if (violation.count >= 3) {
+            violation.bannedUntil = new Date(Date.now() + BAN_DURATION);
+            ipViolations.set(ip, violation);
+            socket.emit("banned", { message: "You have been temporarily banned for 24 hours for repeated inappropriate language." });
+            socket.disconnect(true);
+            return;
+         }
+         ipViolations.set(ip, violation);
+         data.content = filter.clean(data.content);
+         socket.emit("warning", { message: `Warning: Inappropriate language detected. Strike ${violation.count}/3.` });
+      } else if (data && data.content) {
+         data.content = filter.clean(data.content);
       }
 
       io.to(data.roomId)
