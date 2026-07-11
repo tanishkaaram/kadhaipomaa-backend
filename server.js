@@ -12,6 +12,7 @@ const cors = require("cors");
 const app = express();
 
 app.use(cors());
+app.use(express.json());
 
 const server = http.createServer(app);
 
@@ -261,6 +262,31 @@ io.on("connection", (socket) => {
 
   );
 
+});
+
+app.post("/admin/stats", (req, res) => {
+  const { password } = req.body;
+  if (!process.env.ADMIN_PASSWORD || password !== process.env.ADMIN_PASSWORD) {
+    return res.status(401).json({ error: "Unauthorized" });
+  }
+  const violations = Array.from(ipViolations.entries()).map(([ip, data]) => ({
+    ip,
+    count: data.count,
+    bannedUntil: data.bannedUntil
+  }));
+  res.json({
+    activeConnections: io.engine.clientsCount,
+    violations
+  });
+});
+
+app.post("/admin/unban", (req, res) => {
+  const { password, ip } = req.body;
+  if (!process.env.ADMIN_PASSWORD || password !== process.env.ADMIN_PASSWORD) {
+    return res.status(401).json({ error: "Unauthorized" });
+  }
+  ipViolations.delete(ip);
+  res.json({ success: true });
 });
 
 server.listen(8088, () => {
