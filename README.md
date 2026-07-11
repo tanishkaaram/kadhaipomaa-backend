@@ -26,3 +26,12 @@ This is the Node.js / Express / Socket.io backend server for the Kadhaipomaa ano
 
 ## Deployment
 This project is configured to run easily on platforms like Render or Heroku. Make sure to set the `ADMIN_PASSWORD` in your hosting provider's environment variables.
+
+---
+
+## 🛑 Copyright & Usage Restriction
+© 2026 Tanishka R (Kadhaipomaa). All Rights Reserved.
+
+This repository and its source code are provided for portfolio evaluation and recruiter review ONLY.
+
+You are strictly prohibited from copying, cloning, modifying, distributing, or hosting this application (in whole or in part) for personal, educational, or commercial use without explicit written permission from the author.
